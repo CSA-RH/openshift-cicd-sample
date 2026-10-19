@@ -32,7 +32,7 @@ spec:
         - name: app-name
           value: demo-apache
         - name: branch
-          value: master
+          value: demo
       runAfter:
         - launch-build
       taskRef:
@@ -53,11 +53,11 @@ spec:
         - name: github-repo
           value: httpd-ex
         - name: deployment-file
-          value: gitops/manifests/app.yaml
+          value: manifests/apache/app.yaml
         - name: app-name
           value: demo-apache
         - name: branch
-          value: master
+          value: demo
       runAfter:
         - tag-imagestream
       taskRef:
