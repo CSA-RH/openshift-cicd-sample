@@ -150,7 +150,33 @@ Instead of letting `oc new-app` handle everything implicitly, we use Tekton to g
 
 This demo pipeline (`demo-buildconfig-apache`) maintains compatibility with the current legacy code but extracts the output and automatically generates a Pull Request in our GitOps repository, allowing ArgoCD to securely take control.
 
-We need to remove
+ **Crucial GitOps Step: Removing the OpenShift Image Trigger** 
+ 
+ When migrating an application that was originally deployed via oc new-app (S2I) to be managed by ArgoCD, there is a critical cleanup step required on the Deployment manifest.
+
+Legacy deployments contain an internal OpenShift annotation that watches for ImageStream changes:
+
+```yaml
+metadata:
+  annotations:
+    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"demo-apache:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"demo-apache\")].image"}]'
+```
+
+**This annotation MUST be removed from the manifest stored in your GitOps repository.**
+
+If not removed, it will cause an infinite reconciliation loop:
+
+1. OpenShift's internal BuildEngine detects a new image and mutates the Deployment in the cluster.
+
+2. ArgoCD detects this mutation as Drift (the cluster state no longer matches the Git state).
+
+3. ArgoCD's Self-Heal mechanism overrides the OpenShift mutation to restore the Git state.
+
+4. The cycle repeats indefinitely, or the application remains eternally `OutOfSync`.
+
+By removing this annotation, we strip OpenShift of its implicit deployment power, explicitly transferring full deployment authority to ArgoCD and the Git repository, which is the fundamental premise of GitOps.
+
+You can find the Application GitOps object for this example [here](/gitops/apps/demo-buildconfig-apache.yaml)
 
 **Custom Tasks Created:**
 
