@@ -34,6 +34,8 @@ spec:
           value: 'image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(params.app-name):latest'
         - name: DOCKERFILE
           value: ./Dockerfile
+        - name: CONTEXT
+          value: /apps/petclinic-dockerfile
       runAfter:
         - fetch-repository
       taskRef:
