@@ -1,0 +1,76 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: demo-buildconfig-apache
+  namespace: demo-builds
+spec:
+  params:
+    - default: demo-apache
+      description: BuildConfig to trigger
+      name: buildconfig-name
+      type: string
+  tasks:
+    - name: launch-build
+      params:
+        - name: SCRIPT
+          value: oc start-build $(params.buildconfig-name) --wait --follow
+        - name: VERSION
+          value: latest
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+    - name: tag-imagestream
+      params:
+        - name: app-source-repo
+          value: 'https://github.com/CSA-RH/openshift-cicd-sample.git'
+        - name: app-name
+          value: demo-apache
+        - name: branch
+          value: master
+      runAfter:
+        - launch-build
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: ct-tag-imagestream
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+    - name: github-open-pr
+      params:
+        - name: image-tag
+          value: $(tasks.tag-imagestream.results.image-tag)
+        - name: github-owner
+          value: bizcochillo
+        - name: github-repo
+          value: httpd-ex
+        - name: deployment-file
+          value: gitops/manifests/app.yaml
+        - name: app-name
+          value: demo-apache
+        - name: branch
+          value: master
+      runAfter:
+        - tag-imagestream
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: ct-github-open-pr
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      workspaces:
+        - name: source
+          workspace: source
+  workspaces:
+    - name: source

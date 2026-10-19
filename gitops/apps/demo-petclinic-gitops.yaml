@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo-petclinic-gitops
+  namespace: openshift-gitops 
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/CSA-RH/openshift-cicd-sample.git' 
+    targetRevision: demo
+    path: manifests/petclinic
+  destination:
+    server: 'https://kubernetes.default.svc' 
+    namespace: demo-dockerfile
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

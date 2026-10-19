@@ -22,7 +22,7 @@ oc new-project demo-builds
 ```
 
 ### 1.1 The `oc new-app` Command
-We can deploy applications starting from a local `ImageStream` or an image from the official catalog (https://catalog.redhat.com/en/search?searchType=Containers).
+We can deploy applications starting from a local `ImageStream` or an image from the official catalog (https://catalog.redhat.com/en/search?searchType=Containers). *NOTE: demo branch is used as main branch*
 
 Example using a local ImageStream (remove `--dry-run -oyaml` for creating the actual objects):
 
@@ -30,16 +30,18 @@ Example using a local ImageStream (remove `--dry-run -oyaml` for creating the ac
 oc new-app \
   openshift/httpd~https://github.com/bizcochillo/httpd-ex.git#demo \
   --name demo-apache \
+  --context-dir apps/apache-s2i \
   --dry-run \
   -o yaml
 ```
 
-Example using a UBI8 directly from the Red Hat Container Calatog (https://catalog.redhat.com/en/search?q=httpd-24) (Red Hat Universal Base Image) base image (remove `--dry-run -oyaml` for creating the actual objects):
+Example using a UBI8 directly from the Red Hat Container Calatog (https://catalog.redhat.com/en/search?q=httpd-24) (Red Hat Universal Base Image) base image (remove `--dry-run -oyaml` for creating the actual objects). *NOTE: demo branch is used as main branch*
 
 ```bash
 oc new-app \
     registry.access.redhat.com/ubi8/httpd-24~https://github.com/bizcochillo/httpd-ex.git#demo \
     --name=demo-apache \
+    --context-dir apps/apache-s2i \
     --dry-run \
     -o yaml
 ```

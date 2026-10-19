@@ -1,0 +1,99 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: demo-dockerfile-petclinic
+  namespace: demo-dockerfile
+spec:
+  params:
+    - default: 'https://github.com/CSA-RH/openshift-cicd-sample.git'
+      name: app-source-repo
+      type: string
+    - default: petclinic
+      name: app-name
+      type: string
+  tasks:
+    - name: fetch-repository
+      params:
+        - name: URL
+          value: $(params.app-source-repo)
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: git-clone
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+    - name: build-and-push
+      params:
+        - name: IMAGE
+          value: 'image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(params.app-name):latest'
+        - name: DOCKERFILE
+          value: ./Dockerfile
+      runAfter:
+        - fetch-repository
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: buildah
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+    - name: tag-imagestream
+      params:
+        - name: app-source-repo
+          value: 'https://github.com/bizcochillo/spring-petclinic.git'
+        - name: app-name
+          value: $(params.app-name)
+        - name: branch
+          value: main
+      runAfter:
+        - build-and-push
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: ct-tag-imagestream
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+    - name: github-open-pr
+      params:
+        - name: image-tag
+          value: $(tasks.tag-imagestream.results.image-tag)
+        - name: github-owner
+          value: bizcochillo
+        - name: github-repo
+          value: spring-petclinic
+        - name: deployment-file
+          value: gitops/manifests/petclinic.yaml
+        - name: app-name
+          value: $(params.app-name)
+        - name: branch
+          value: main
+      runAfter:
+        - tag-imagestream
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: ct-github-open-pr
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+  workspaces:
+    - name: shared-workspace

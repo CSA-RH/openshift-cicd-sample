@@ -1,0 +1,101 @@
+---
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: demo-apache
+  namespace: demo-builds
+  labels:
+    app: demo-apache
+    app.kubernetes.io/component: demo-apache
+    app.kubernetes.io/instance: demo-apache
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'demo-apache:latest'
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: 'httpd-24:latest'
+  source:
+    type: Git
+    contextDir: apps/apache-s2i
+    git:
+      ref: demo
+      uri: 'https://github.com/CSA-RH/openshift-cicd-sample.git'
+  triggers:
+    - type: GitHub
+      github:
+        secret: fr_NoRgF-bwfVmX_8BsS
+    - type: Generic
+      generic:
+        secret: LHgLhTWUOsClT3jCUEV6
+    - type: ConfigChange
+    - type: ImageChange
+      imageChange: {}
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: demo-apache
+  namespace: demo-builds
+  labels:
+    app: demo-apache
+    app.kubernetes.io/component: demo-apache
+    app.kubernetes.io/instance: demo-apache
+spec:
+  lookupPolicy:
+    local: false
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: httpd-24
+  namespace: demo-builds
+  labels:
+    app: demo-apache
+    app.kubernetes.io/component: demo-apache
+    app.kubernetes.io/instance: demo-apache
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - name: latest
+      from:
+        kind: DockerImage
+        name: 'registry.access.redhat.com/ubi10/httpd-24:1791973027'
+      importPolicy:
+        importMode: Legacy
+      referencePolicy:
+        type: Source
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: demo-apache
+  namespace: demo-builds
+  labels:
+    app: demo-apache
+    app.kubernetes.io/component: demo-apache
+    app.kubernetes.io/instance: demo-apache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: demo-apache
+  template:
+    metadata:
+      labels:
+        deployment: demo-apache
+    spec:
+      containers:
+        - name: demo-apache
+          image: 'image-registry.openshift-image-registry.svc:5000/demo-builds/demo-apache:cdab188'
+          resources: {}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8443
+              protocol: TCP

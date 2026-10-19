@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo-apache-gitops
+  namespace: openshift-gitops 
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/CSA-RH/openshift-cicd-sample.git' 
+    targetRevision: demo
+    path: manifests/apache
+  destination:
+    server: 'https://kubernetes.default.svc' 
+    namespace: demo-apache
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

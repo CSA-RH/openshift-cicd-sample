@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: ct-tag-imagestream
+  namespace: openshift-pipelines
+spec:
+  params:
+    - name: app-source-repo
+      type: string
+    - name: app-name
+      type: string
+    - name: branch
+      type: string
+  results:
+    - description: The calculated 7-character Git SHA
+      name: image-tag
+      type: string
+  steps:
+    - computeResources: {}
+      image: 'docker.io/alpine/git:latest'
+      name: get-git-sha
+      script: |
+        #!/bin/sh
+        set -e
+        echo "Fetching latest commit SHA from $(params.app-source-repo)..."
+        FULL_SHA=$(git ls-remote $(params.app-source-repo) refs/heads/$(params.branch) | awk '{print $1}')
+        TAG="${FULL_SHA:0:7}"
+        echo -n "$TAG" > $(results.image-tag.path)
+        echo "Calculated Tag: $TAG"
+    - computeResources: {}
+      image: 'image-registry.openshift-image-registry.svc:5000/openshift/cli:latest'
+      name: tag-image
+      script: |
+        #!/bin/sh
+        set -e
+        TAG="$(cat $(results.image-tag.path))"
+        echo "Tagging OpenShift ImageStream $(params.app-name):latest with $TAG..."
+        oc tag $(params.app-name):latest $(params.app-name):$TAG
