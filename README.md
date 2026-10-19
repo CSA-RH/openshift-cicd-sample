@@ -180,13 +180,15 @@ You can find the Application GitOps object for this example [here](/gitops/apps/
 
 **Custom Tasks Created:**
 
-1. `ct-tag-imagestream`: Extracts the exact Git commit SHA and tags the OpenShift image, moving away from the bad practice of using the latest tag.
+1. `ct-tag-imagestream` [here](/platform/tasks/ct-tag-imagestream.yaml):  Extracts the exact Git commit SHA and tags the OpenShift image, moving away from the bad practice of using the latest tag.
 
-2. `ct-github-open-pr`: Clones the GitOps repository, injects the new image tag into the deployment manifest using yq, commits the changes, and opens a GitHub PR unattended.
+2. `ct-github-open-pr` [here](/platform/tasks/ct-github-open-pr.yaml): Clones the GitOps repository, injects the new image tag into the deployment manifest using yq, commits the changes, and opens a GitHub PR unattended.
 
 (The complete YAML definitions for these tasks can be found in the `platform/tasks/` directory of this repository).
 
 **Pipeline Flow (`demo-buildconfig-apache`):**
+
+Available [here](/platform/pipelines/demo-buildconfig-apache.yaml)
 
 1. Triggers the legacy build process (`oc start-build`).
 
@@ -195,6 +197,9 @@ You can find the Application GitOps object for this example [here](/gitops/apps/
 3. Opens the GitOps PR for human or automated approval.
 
 ## Phase 4: The Greenfield Model (Dockerfile + GitOps)
+
+Available [here](/platform/pipelines/demo-dockerfile-petclinic.yaml)
+
 For new projects (Greenfield) or refactored applications, we can consider the Multi-stage Dockerfiles using Buildah, which in turn provides more flexibility (*With great power comes great responsibility*).
 
 Example Application: **Spring Petclinic**
