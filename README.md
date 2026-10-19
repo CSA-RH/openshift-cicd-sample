@@ -28,7 +28,7 @@ Example using a local ImageStream (remove `--dry-run -oyaml` for creating the ac
 
 ```bash
 oc new-app \
-  openshift/httpd~https://github.com/bizcochillo/httpd-ex.git#demo \
+  openshift/httpd~https://github.com/CSA-RH/openshift-cicd-sample.git#demo \
   --name demo-apache \
   --context-dir apps/apache-s2i \
   --dry-run \
@@ -39,7 +39,7 @@ Example using a UBI8 directly from the Red Hat Container Calatog (https://catalo
 
 ```bash
 oc new-app \
-    registry.access.redhat.com/ubi8/httpd-24~https://github.com/bizcochillo/httpd-ex.git#demo \
+    registry.access.redhat.com/ubi8/httpd-24~https://github.com/CSA-RH/openshift-cicd-sample.git#demo \
     --name=demo-apache \
     --context-dir apps/apache-s2i \
     --dry-run \
@@ -52,7 +52,7 @@ The main engine of the traditional model relies on triggers. A `Deployment` or a
 - **ImageStream Triggers**: If the base image changes, the build is triggered. We can simulate this by updating the UBI version (from 8 to 10):
 
 ```bash
-oc tag registry.access.redhat.com/ubi10/httpd-24:1791973027 httpd-24:latest
+oc tag registry.access.redhat.com/ubi10/httpd-24:1791973027 httpd-24:latest -n demo-builds
 ```
 
 This change on the `latest` tag will automatically trigger a new build and a subsequent deployment.

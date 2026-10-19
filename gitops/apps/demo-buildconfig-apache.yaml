@@ -11,7 +11,7 @@ spec:
     path: manifests/apache
   destination:
     server: 'https://kubernetes.default.svc' 
-    namespace: demo-apache
+    namespace: demo-builds
   syncPolicy:
     automated:
       prune: true
