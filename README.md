@@ -28,7 +28,7 @@ Example using a local ImageStream (remove `--dry-run -oyaml` for creating the ac
 
 ```bash
 oc new-app \
-  openshift/httpd~https://github.com/CSA-RH/openshift-cicd-sample.git#demo \
+  openshift/httpd:latest~https://github.com/CSA-RH/openshift-cicd-sample.git#demo \
   --name demo-apache \
   --context-dir apps/apache-s2i \
   --dry-run \
