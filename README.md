@@ -49,7 +49,7 @@ oc new-app \
 ### 1.2 The Concept of Triggers
 The main engine of the traditional model relies on triggers. A `Deployment` or a `BuildConfig` executes automatically when it detects a change.
 
-- **ImageStream Triggers**: If the base image changes, the build is triggered. We can simulate this by updating the UBI version (from 8 to 10):
+- **ImageStream Triggers**: If the base image changes, the build is triggered. We can simulate this by updating the UBI version (from 8 to 10). This example only works if we have picked an external image and the ImageStream is generated in the same namespace:
 
 ```bash
 oc tag registry.access.redhat.com/ubi10/httpd-24:1791973027 httpd-24:latest -n demo-builds
